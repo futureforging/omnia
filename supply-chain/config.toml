@@ -47,7 +47,7 @@ version = "0.5.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.base64ct]]
-version = "1.8.1"
+version = "1.8.2"
 criteria = "safe-to-deploy"
 
 [[exemptions.bytecheck]]
@@ -306,10 +306,6 @@ criteria = "safe-to-deploy"
 version = "1.1.10"
 criteria = "safe-to-deploy"
 
-[[exemptions.pkg-config]]
-version = "0.3.32"
-criteria = "safe-to-deploy"
-
 [[exemptions.ppv-lite86]]
 version = "0.2.21"
 criteria = "safe-to-deploy"
@@ -367,11 +363,11 @@ version = "0.17.14"
 criteria = "safe-to-deploy"
 
 [[exemptions.rkyv]]
-version = "0.8.12"
+version = "0.8.13"
 criteria = "safe-to-deploy"
 
 [[exemptions.rkyv_derive]]
-version = "0.8.12"
+version = "0.8.13"
 criteria = "safe-to-deploy"
 
 [[exemptions.rusqlite]]
@@ -383,7 +379,7 @@ version = "0.22.4"
 criteria = "safe-to-deploy"
 
 [[exemptions.rustls]]
-version = "0.23.35"
+version = "0.23.36"
 criteria = "safe-to-deploy"
 
 [[exemptions.rustls-native-certs]]
@@ -478,6 +474,10 @@ criteria = "safe-to-deploy"
 version = "0.26.4"
 criteria = "safe-to-deploy"
 
+[[exemptions.tokio-stream]]
+version = "0.1.18"
+criteria = "safe-to-deploy"
+
 [[exemptions.tokio-tungstenite]]
 version = "0.28.0"
 criteria = "safe-to-deploy"
@@ -534,10 +534,6 @@ criteria = "safe-to-deploy"
 version = "0.9.0"
 criteria = "safe-to-deploy"
 
-[[exemptions.utf-8]]
-version = "0.7.6"
-criteria = "safe-to-deploy"
-
 [[exemptions.uuid]]
 version = "1.19.0"
 criteria = "safe-to-deploy"
@@ -579,7 +575,7 @@ version = "1.1.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.webpki-root-certs]]
-version = "1.0.4"
+version = "1.0.5"
 criteria = "safe-to-deploy"
 
 [[exemptions.webpki-roots]]
@@ -587,7 +583,7 @@ version = "0.26.11"
 criteria = "safe-to-deploy"
 
 [[exemptions.webpki-roots]]
-version = "1.0.4"
+version = "1.0.5"
 criteria = "safe-to-deploy"
 
 [[exemptions.wit-bindgen]]
@@ -631,5 +627,5 @@ version = "0.11.5"
 criteria = "safe-to-deploy"
 
 [[exemptions.zmij]]
-version = "1.0.5"
+version = "1.0.12"
 criteria = "safe-to-deploy"
