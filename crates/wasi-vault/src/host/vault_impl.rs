@@ -1,12 +1,10 @@
 use anyhow::Context;
-use wasmtime::component::{Access, Accessor, Resource, ResourceTableError};
+use wasmtime::component::{Access, Accessor, Resource};
 
 use crate::host::generated::wasi::vault::vault::Error;
 use crate::host::resource::LockerProxy;
 use crate::host::vault::{Host, HostLocker, HostLockerWithStore, HostWithStore};
-use crate::host::{WasiVault, WasiVaultCtxView};
-
-pub type Result<T, E = Error> = anyhow::Result<T, E>;
+use crate::host::{Result, WasiVault, WasiVaultCtxView};
 
 impl HostWithStore for WasiVault {
     async fn open<T>(
@@ -62,13 +60,13 @@ impl HostLockerWithStore for WasiVault {
 
     fn drop<T>(
         mut accessor: Access<'_, T, Self>, rep: Resource<LockerProxy>,
-    ) -> anyhow::Result<()> {
+    ) -> wasmtime::Result<()> {
         accessor.get().table.delete(rep).map(|_| Ok(()))?
     }
 }
 
 impl Host for WasiVaultCtxView<'_> {
-    fn convert_error(&mut self, err: Error) -> Result<Error, anyhow::Error> {
+    fn convert_error(&mut self, err: Error) -> wasmtime::Result<Error> {
         Ok(err)
     }
 }
@@ -82,16 +80,4 @@ pub fn get_locker<T>(
         let locker = store.get().table.get(self_)?;
         Ok::<_, Error>(locker.clone())
     })
-}
-
-impl From<anyhow::Error> for Error {
-    fn from(err: anyhow::Error) -> Self {
-        Self::Other(err.to_string())
-    }
-}
-
-impl From<ResourceTableError> for Error {
-    fn from(err: ResourceTableError) -> Self {
-        Self::Other(err.to_string())
-    }
 }

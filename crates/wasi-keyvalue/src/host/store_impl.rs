@@ -62,13 +62,13 @@ impl HostBucketWithStore for WasiKeyValue {
 
     fn drop<T>(
         mut accessor: Access<'_, T, Self>, rep: Resource<BucketProxy>,
-    ) -> anyhow::Result<()> {
+    ) -> std::result::Result<(), wasmtime::Error> {
         Ok(accessor.get().table.delete(rep).map(|_| ())?)
     }
 }
 
 impl Host for WasiKeyValueCtxView<'_> {
-    fn convert_error(&mut self, err: Error) -> Result<Error, anyhow::Error> {
+    fn convert_error(&mut self, err: Error) -> wasmtime::Result<Error> {
         Ok(err)
     }
 }
@@ -82,10 +82,4 @@ pub fn get_bucket<T>(
         let bucket = store.get().table.get(self_).map_err(|_e| Error::NoSuchStore)?;
         Ok::<_, Error>(bucket.clone())
     })
-}
-
-impl From<anyhow::Error> for Error {
-    fn from(err: anyhow::Error) -> Self {
-        Self::Other(err.to_string())
-    }
 }

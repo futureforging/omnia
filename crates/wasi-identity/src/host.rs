@@ -31,12 +31,16 @@ use std::sync::Arc;
 
 pub use qwasr::FutureResult;
 use qwasr::{Host, Server, State};
-use wasmtime::component::{HasData, Linker};
+use wasmtime::component::{HasData, Linker, ResourceTableError};
 use wasmtime_wasi::ResourceTable;
 
 pub use self::default_impl::IdentityDefault;
 use self::generated::wasi::identity::credentials;
 pub use self::resource::*;
+use crate::host::generated::Error;
+
+/// Result type for identity operations.
+pub type Result<T> = anyhow::Result<T, Error>;
 
 /// Host-side service for `wasi:identity`.
 #[derive(Debug)]
@@ -51,7 +55,7 @@ where
     T: WasiIdentityView + 'static,
 {
     fn add_to_linker(linker: &mut Linker<T>) -> anyhow::Result<()> {
-        credentials::add_to_linker::<_, Self>(linker, T::identity)
+        Ok(credentials::add_to_linker::<_, Self>(linker, T::identity)?)
     }
 }
 
@@ -82,6 +86,20 @@ pub struct WasiIdentityCtxView<'a> {
 pub trait WasiIdentityCtx: Debug + Send + Sync + 'static {
     /// Get the identity for the specified name.
     fn get_identity(&self, name: String) -> FutureResult<Arc<dyn Identity>>;
+}
+
+/// `anyhow::Error` to `Error` mapping
+impl From<anyhow::Error> for Error {
+    fn from(err: anyhow::Error) -> Self {
+        Self::InternalFailure(err.to_string())
+    }
+}
+
+/// `ResourceTableError` to `Error` mapping
+impl From<ResourceTableError> for Error {
+    fn from(err: ResourceTableError) -> Self {
+        Self::InternalFailure(err.to_string())
+    }
 }
 
 /// Implementation of the `WasiIdentityView` trait for the store context.

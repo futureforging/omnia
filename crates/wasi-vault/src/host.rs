@@ -31,12 +31,16 @@ use std::sync::Arc;
 
 pub use qwasr::FutureResult;
 use qwasr::{Host, Server, State};
-use wasmtime::component::{HasData, Linker};
+use wasmtime::component::{HasData, Linker, ResourceTableError};
 use wasmtime_wasi::ResourceTable;
 
 use self::generated::wasi::vault::vault;
 pub use crate::host::default_impl::VaultDefault;
+use crate::host::generated::Error;
 pub use crate::host::resource::*;
+
+/// Result type for  vault operations.
+pub type Result<T, E = Error> = anyhow::Result<T, E>;
 
 /// Host-side service for `wasi:vault`.
 #[derive(Debug)]
@@ -51,7 +55,7 @@ where
     T: WasiVaultView + 'static,
 {
     fn add_to_linker(linker: &mut Linker<T>) -> anyhow::Result<()> {
-        vault::add_to_linker::<_, Self>(linker, T::vault)
+        Ok(vault::add_to_linker::<_, Self>(linker, T::vault)?)
     }
 }
 
@@ -82,6 +86,20 @@ pub struct WasiVaultCtxView<'a> {
 pub trait WasiVaultCtx: Debug + Send + Sync + 'static {
     /// Open a locker.
     fn open_locker(&self, identifier: String) -> FutureResult<Arc<dyn Locker>>;
+}
+
+/// `anyhow::Error` to `Error` mapping
+impl From<anyhow::Error> for Error {
+    fn from(err: anyhow::Error) -> Self {
+        Self::Other(err.to_string())
+    }
+}
+
+/// `ResourceTableError` to `Error` mapping
+impl From<ResourceTableError> for Error {
+    fn from(err: ResourceTableError) -> Self {
+        Self::Other(err.to_string())
+    }
 }
 
 /// Implementation of the `WasiVaultView` trait for the store context.

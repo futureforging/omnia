@@ -66,7 +66,7 @@ where
     fn add_to_linker(linker: &mut Linker<T>) -> anyhow::Result<()> {
         producer::add_to_linker::<_, Self>(linker, T::messaging)?;
         request_reply::add_to_linker::<_, Self>(linker, T::messaging)?;
-        types::add_to_linker::<_, Self>(linker, T::messaging)
+        Ok(types::add_to_linker::<_, Self>(linker, T::messaging)?)
     }
 }
 
@@ -164,14 +164,23 @@ pub trait WasiMessagingCtx: Debug + Send + Sync + 'static {
     ) -> anyhow::Result<Arc<dyn Message>>;
 }
 
+/// `anyhow::Error` to `Error` mapping
+impl From<anyhow::Error> for Error {
+    fn from(err: anyhow::Error) -> Self {
+        Self::Other(err.to_string())
+    }
+}
+
+/// `ResourceTableError` to `Error` mapping
 impl From<ResourceTableError> for Error {
     fn from(err: ResourceTableError) -> Self {
         Self::Other(err.to_string())
     }
 }
 
-impl From<anyhow::Error> for Error {
-    fn from(err: anyhow::Error) -> Self {
+/// `wasmtime::Error` to `Error` mapping
+impl From<wasmtime::Error> for Error {
+    fn from(err: wasmtime::Error) -> Self {
         Self::Other(err.to_string())
     }
 }
