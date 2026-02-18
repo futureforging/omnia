@@ -1,6 +1,6 @@
 [package]
-name = "qwasr-wasi-websockets"
-description = "WASI WebSockets WIT implementation"
+name = "qwasr-wasi-websocket"
+description = "WASI WebSocket WIT implementation"
 readme = "README.md"
 authors.workspace = true
 categories.workspace = true
@@ -20,16 +20,14 @@ workspace = true
 # host dependencies
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 anyhow.workspace = true
+fromenv.workspace = true
 futures.workspace = true
 futures-channel.workspace = true
 futures-util.workspace = true
-http-body-util.workspace = true
-hyper = { workspace = true, features = ["server"] }
-hyper-util.workspace = true
+parking_lot.workspace = true
 qwasr.workspace = true
-serde.workspace = true
-serde_json.workspace = true
-tokio = { workspace = true, features = ["sync"] }
+tokio = { workspace = true, features = ["sync", "time"] }
+tokio-stream.workspace = true
 tokio-tungstenite = "0.28.0"
 tracing.workspace = true
 tungstenite = "0.28.0"
