@@ -2,19 +2,18 @@
 //!
 //! This is a lightweight implementation for development use only.
 
-use std::collections::HashMap;
 use std::sync::Arc;
 
 use anyhow::Result;
 use futures::FutureExt;
-use parking_lot::RwLock;
+use moka::sync::Cache;
 use qwasr::Backend;
 use tracing::instrument;
 
 use crate::host::WasiKeyValueCtx;
 use crate::host::resource::{Bucket, FutureResult};
 
-type Store = Arc<RwLock<HashMap<String, HashMap<String, Vec<u8>>>>>;
+type BucketCache = Cache<String, Vec<u8>>;
 
 #[derive(Debug, Clone, Default)]
 pub struct ConnectOptions;
@@ -26,9 +25,15 @@ impl qwasr::FromEnv for ConnectOptions {
 }
 
 /// Default implementation for `wasi:keyvalue`.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct KeyValueDefault {
-    store: Store,
+    store: Cache<String, BucketCache>,
+}
+
+impl std::fmt::Debug for KeyValueDefault {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("KeyValueDefault").finish_non_exhaustive()
+    }
 }
 
 impl Backend for KeyValueDefault {
@@ -38,7 +43,7 @@ impl Backend for KeyValueDefault {
     async fn connect_with(options: Self::ConnectOptions) -> Result<Self> {
         tracing::debug!("initializing in-memory key-value store");
         Ok(Self {
-            store: Arc::new(RwLock::new(HashMap::new())),
+            store: Cache::builder().build(),
         })
     }
 }
@@ -47,24 +52,27 @@ impl WasiKeyValueCtx for KeyValueDefault {
     fn open_bucket(&self, identifier: String) -> FutureResult<Arc<dyn Bucket>> {
         tracing::debug!("opening bucket: {identifier}");
 
-        let bucket = InMemBucket {
-            name: identifier.clone(),
-            store: Arc::clone(&self.store),
-        };
+        let cache = self.store.get_with(identifier.clone(), || Cache::builder().build());
 
-        {
-            let mut store = self.store.write();
-            store.entry(identifier).or_default()
+        let bucket = InMemBucket {
+            name: identifier,
+            cache,
         };
 
         async move { Ok(Arc::new(bucket) as Arc<dyn Bucket>) }.boxed()
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 struct InMemBucket {
     name: String,
-    store: Store,
+    cache: BucketCache,
+}
+
+impl std::fmt::Debug for InMemBucket {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("InMemBucket").field("name", &self.name).finish_non_exhaustive()
+    }
 }
 
 impl Bucket for InMemBucket {
@@ -76,79 +84,32 @@ impl Bucket for InMemBucket {
 
     fn get(&self, key: String) -> FutureResult<Option<Vec<u8>>> {
         tracing::debug!("getting key: {key} from bucket: {}", self.name);
-        let store = Arc::clone(&self.store);
-        let name = self.name.clone();
-
-        async move {
-            let result = {
-                let store = store.read();
-                store.get(&name).and_then(|bucket| bucket.get(&key).cloned())
-            };
-            Ok(result)
-        }
-        .boxed()
+        let result = self.cache.get(&key);
+        async move { Ok(result) }.boxed()
     }
 
     fn set(&self, key: String, value: Vec<u8>) -> FutureResult<()> {
         tracing::debug!("setting key: {key} in bucket: {}", self.name);
-        let store = Arc::clone(&self.store);
-        let name = self.name.clone();
-
-        async move {
-            {
-                let mut store = store.write();
-                store.entry(name).or_default().insert(key, value)
-            };
-            Ok(())
-        }
-        .boxed()
+        self.cache.insert(key, value);
+        async move { Ok(()) }.boxed()
     }
 
     fn delete(&self, key: String) -> FutureResult<()> {
         tracing::debug!("deleting key: {key} from bucket: {}", self.name);
-        let store = Arc::clone(&self.store);
-        let name = self.name.clone();
-
-        async move {
-            {
-                let mut store = store.write();
-                if let Some(bucket) = store.get_mut(&name) {
-                    bucket.remove(&key);
-                }
-            }
-            Ok(())
-        }
-        .boxed()
+        self.cache.invalidate(&key);
+        async move { Ok(()) }.boxed()
     }
 
     fn exists(&self, key: String) -> FutureResult<bool> {
         tracing::debug!("checking existence of key: {key} in bucket: {}", self.name);
-        let store = Arc::clone(&self.store);
-        let name = self.name.clone();
-
-        async move {
-            let exists = {
-                let store = store.read();
-                store.get(&name).is_some_and(|bucket| bucket.contains_key(&key))
-            };
-            Ok(exists)
-        }
-        .boxed()
+        let exists = self.cache.contains_key(&key);
+        async move { Ok(exists) }.boxed()
     }
 
     fn keys(&self) -> FutureResult<Vec<String>> {
         tracing::debug!("listing keys in bucket: {}", self.name);
-        let store = Arc::clone(&self.store);
-        let name = self.name.clone();
-
-        async move {
-            let keys = {
-                let store = store.read();
-                store.get(&name).map(|bucket| bucket.keys().cloned().collect()).unwrap_or_default()
-            };
-            Ok(keys)
-        }
-        .boxed()
+        let keys = self.cache.iter().map(|(k, _)| (*k).clone()).collect();
+        async move { Ok(keys) }.boxed()
     }
 }
 
