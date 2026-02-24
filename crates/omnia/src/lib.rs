@@ -1,5 +1,4 @@
-//! # WebAssembly Initiator
-
+#![doc = include_str!("../README.md")]
 #![cfg(not(target_arch = "wasm32"))]
 
 #[cfg(feature = "jit")]
@@ -11,7 +10,8 @@ use std::path::PathBuf;
 
 pub use clap::Parser;
 use clap::Subcommand;
-pub use qwasr_runtime_macro::runtime;
+pub use omnia_runtime_macro::runtime;
+#[doc(hidden)]
 pub use {anyhow, futures, tokio, wasmtime, wasmtime_wasi};
 
 // re-export internal modules
@@ -20,7 +20,7 @@ pub use self::compile::*;
 pub use self::create::*;
 pub use self::traits::*;
 
-/// Command line interface for qwasr.
+/// Command line interface for omnia.
 #[derive(Parser, PartialEq, Eq)]
 pub struct Cli {
     /// The command to execute.
@@ -28,7 +28,7 @@ pub struct Cli {
     pub command: Command,
 }
 
-/// Subcommands for the qwasr CLI.
+/// Subcommands for the omnia CLI.
 #[derive(Subcommand, PartialEq, Eq)]
 pub enum Command {
     /// Run the specified wasm guest.

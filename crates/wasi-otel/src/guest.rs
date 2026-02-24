@@ -6,8 +6,6 @@
 //!
 //! [wasi]: https://github.com/bytecodealliance/wasi
 
-#![allow(clippy::same_length_and_capacity)]
-
 mod convert;
 mod init;
 #[cfg(feature = "metrics")]
@@ -28,6 +26,6 @@ mod generated {
 }
 
 /// Re-exported `instrument` macro for use in guest code.
-pub use qwasr_wasi_otel_attr::instrument;
+pub use omnia_wasi_otel_attr::instrument;
 
 pub use crate::guest::init::*;

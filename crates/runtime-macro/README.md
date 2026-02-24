@@ -1,6 +1,6 @@
-# buildgen
+# omnia-runtime-macro
 
-Procedural macros for generating WebAssembly Component Initiator infrastructure.
+Procedural macros for generating WebAssembly Component Runtime infrastructure.
 
 ## Overview
 
@@ -8,21 +8,21 @@ This crate provides the `runtime!` macro that generates the necessary runtime in
 
 ## Usage
 
-Add `buildgen` to your dependencies:
+Add `omnia` to your dependencies (the `runtime!` macro is re-exported from the `omnia` crate):
 
 ```toml
 [dependencies]
-buildgen = { workspace = true }
+omnia = { workspace = true }
 ```
 
 Then use the `runtime!` macro to generate your runtime infrastructure:
 
-```rust
-use buildgen::runtime;
+```rust,ignore
+use omnia::runtime;
 
 // Import the backend types you want to use
-use qwasr_wasi_http::WasiHttpCtx;
-use qwasr_wasi_otel::DefaultOtel;
+use omnia_wasi_http::WasiHttpCtx;
+use omnia_wasi_otel::DefaultOtel;
 use be_mongodb::Client as MongoDb;
 use be_nats::Client as Nats;
 use be_azure::Client as Azure;
@@ -49,7 +49,7 @@ runtime!({
 
 The macro accepts a map-like syntax:
 
-```rust
+```rust,ignore
 runtime!({
     "interface_name": BackendType,
     // ...
@@ -93,7 +93,7 @@ The macro generates the following:
 
 A struct holding pre-instantiated components and backend connections:
 
-```rust
+```rust,ignore
 #[derive(Clone)]
 struct RuntimeContext {
     instance_pre: InstancePre<RuntimeStoreCtx>,
@@ -105,7 +105,7 @@ struct RuntimeContext {
 
 Per-instance data shared between the WebAssembly runtime and host functions:
 
-```rust
+```rust,ignore
 pub struct RuntimeStoreCtx {
     pub table: ResourceTable,
     pub wasi: WasiCtx,
@@ -121,7 +121,7 @@ Implements the `State` trait from the `runtime` crate, providing methods to crea
 
 Implements view traits for each configured WASI interface, allowing the WebAssembly guest to call host functions.
 
-### runtime_run() Function
+### `runtime_run()` Function
 
 A public async function that:
 
@@ -135,23 +135,23 @@ A public async function that:
 
 You can create different runtime configurations for different use cases:
 
-```rust
+```rust,ignore
 // Minimal HTTP server
 mod http_runtime {
-    use qwasr_wasi_http::WasiHttpCtx;
+    use omnia_wasi_http::WasiHttpCtx;
 
-    qwasr::runtime!({
+    omnia::runtime!({
         "http": WasiHttpCtx
     });
 }
 
 // Full-featured runtime
 mod full_runtime {
-    use qwasr_wasi_http::WasiHttpCtx;
-    use qwasr_wasi_otel::DefaultOtel;
+    use omnia_wasi_http::WasiHttpCtx;
+    use omnia_wasi_otel::DefaultOtel;
     use be_nats::Client as Nats;
 
-    qwasr::runtime!({
+    omnia::runtime!({
         "http": WasiHttpCtx,
         "otel": DefaultOtel,
         "keyvalue": Nats,
@@ -163,9 +163,9 @@ mod full_runtime {
 
 Now you can declaratively specify your configuration:
 
-```rust
-mod credibil_runtime {
-    qwasr::runtime!({
+```rust,ignore
+mod omnia_runtime {
+    omnia::runtime!({
         "http": WasiHttpCtx,
         "otel": DefaultOtel,
         "blobstore": MongoDb,

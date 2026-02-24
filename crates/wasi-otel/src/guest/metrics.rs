@@ -264,9 +264,7 @@ impl From<Temporality> for wasi::Temporality {
     fn from(temporality: Temporality) -> Self {
         match temporality {
             Temporality::Delta => Self::Delta,
-            Temporality::Cumulative => Self::Cumulative,
-            Temporality::LowMemory => Self::LowMemory,
-            _ => unimplemented!(),
+            _ => Self::Cumulative,
         }
     }
 }

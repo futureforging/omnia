@@ -42,9 +42,8 @@ pub fn compile(wasm: &PathBuf, output: Option<PathBuf>) -> Result<()> {
             out_path.push(file_name);
         }
 
-        // create output directory if it doesn't exist
         if let Some(dir) = out_path.parent()
-            && !fs::exists(dir)?
+            && !dir.exists()
         {
             fs::create_dir_all(dir)?;
         }

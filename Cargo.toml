@@ -1,21 +1,21 @@
 [workspace]
 members = ["crates/*", "examples"]
-resolver = "3"
+resolver = "2"
 
 [workspace.package]
 authors = ["Augentic"]
-categories = ["runtime", "wasi", "wasm"]
+categories = ["wasm", "web-programming", "asynchronous"]
 edition = "2024"
 homepage = "https://augentic.io"
-keywords = ["runtime", "wasi", "wasm"]
+keywords = ["runtime", "wasi", "wasm", "wasmtime", "component-model"]
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/augentic/qwasr"
+repository = "https://github.com/augentic/omnia"
 rust-version = "1.93"
 version = "0.27.0"
 
 [workspace.lints.rust]
 # https://dirname.github.io/rust-std-doc/rustc/lints/listing/allowed-by-default.html
-missing_docs = "warn"
+missing_docs = "deny"
 trivial_numeric_casts = "warn"
 unsafe_op_in_unsafe_fn = "warn"
 unused_extern_crates = "warn"
@@ -53,14 +53,13 @@ unneeded_field_pattern = "warn"
 unused_result_ok = "warn"
 
 [workspace.dependencies]
-anyhow = "1.0.101"
+anyhow = "1.0.102"
 axum = { version = "0.8.8", default-features = false, features = ["json"] }
 base64ct = { version = "1.8.3", features = ["std"] }
 bytes = "1.11.1"
 cfg-if = "1.0.4"
 chrono = "0.4.43"
 dashmap = "6.1.0"
-moka = { version = "0.12.13", features = ["sync"] }
 fromenv = "0.1.0"
 futures = "0.3.32"
 futures-channel = "0.3.32"
@@ -70,6 +69,7 @@ http-body = "1.0.1"
 http-body-util = "0.1.3"
 hyper = "1.8.1"
 hyper-util = "0.1.20"
+moka = { version = "0.12.13", features = ["sync"] }
 opentelemetry = "0.31.0"
 opentelemetry_sdk = "0.31.0"
 parking_lot = "0.12.5"
@@ -79,8 +79,8 @@ rand = "0.10.0"
 sea-query = { version = "0.32.7", default-features = false, features = ["thread-safe", "with-chrono"] }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.149"
-syn = { version = "2.0.116", features = ["full"] }
-time = "0.3.44"
+syn = { version = "2.0.117", features = ["full"] }
+time = "0.3.45"
 tokio = { version = "1.49.0", default-features = false }
 tokio-stream = { version = "0.1.18", features = ["sync"] }
 tower = "0.5.3"
@@ -88,35 +88,31 @@ tracing = "0.1.44"
 tracing-opentelemetry = "0.32.1"
 tracing-subscriber = { version = "0.3.22", features = ["env-filter", "fmt"] }
 wasip3 = { version = "0.4.0", features = ["http-compat"] }
-wasmtime = { version = "42.0.0", default-features = false, features = [
-    "anyhow",
-    "component-model-async",
-    "parallel-compilation",
-] }
+wasmtime = { version = "42.0.0", default-features = false, features = ["anyhow", "parallel-compilation"] }
 wasmtime-wasi = { version = "42.0.0", features = ["p3"] }
 wasmtime-wasi-config = "42.0.0"
 wasmtime-wasi-http = { version = "42.0.0", features = ["p3"] }
 wasmtime-wasi-io = "42.0.0"
 wit-bindgen = { version = "0.53.1", features = ["async-spawn"] }
 
-# interally referenced crates
-qwasr = { path = "crates/qwasr", version = "0.27.0", registry = "credibil" }
-qwasr-guest-macro = { path = "crates/guest-macro", version = "0.27.0", registry = "credibil" }
-qwasr-orm = { path = "crates/orm", version = "0.27.0", registry = "credibil" }
-qwasr-otel = { path = "crates/otel", version = "0.27.0", registry = "credibil" }
-qwasr-runtime-macro = { path = "crates/runtime-macro", version = "0.27.0", registry = "credibil" }
-qwasr-sdk = { path = "crates/qwasr-sdk", version = "0.27.0", registry = "credibil" }
-qwasr-wasi-blobstore = { path = "crates/wasi-blobstore", version = "0.27.0", registry = "credibil" }
-qwasr-wasi-config = { path = "crates/wasi-config", version = "0.27.0", registry = "credibil" }
-qwasr-wasi-http = { path = "crates/wasi-http", version = "0.27.0", registry = "credibil" }
-qwasr-wasi-identity = { path = "crates/wasi-identity", version = "0.27.0", registry = "credibil" }
-qwasr-wasi-keyvalue = { path = "crates/wasi-keyvalue", version = "0.27.0", registry = "credibil" }
-qwasr-wasi-messaging = { path = "crates/wasi-messaging", version = "0.27.0", registry = "credibil" }
-qwasr-wasi-otel = { path = "crates/wasi-otel", version = "0.27.0", registry = "credibil" }
-qwasr-wasi-otel-attr = { path = "crates/wasi-otel-attr", version = "0.27.0", registry = "credibil" }
-qwasr-wasi-sql = { path = "crates/wasi-sql", version = "0.27.0", registry = "credibil" }
-qwasr-wasi-vault = { path = "crates/wasi-vault", version = "0.27.0", registry = "credibil" }
-qwasr-wasi-websocket = { path = "crates/wasi-websocket", version = "0.27.0", registry = "credibil" }
+# internally referenced crates
+omnia = { path = "crates/omnia", version = "0.27.0" }
+omnia-guest-macro = { path = "crates/guest-macro", version = "0.27.0" }
+omnia-orm = { path = "crates/orm", version = "0.27.0" }
+omnia-otel = { path = "crates/otel", version = "0.27.0" }
+omnia-runtime-macro = { path = "crates/runtime-macro", version = "0.27.0" }
+omnia-sdk = { path = "crates/omnia-sdk", version = "0.27.0" }
+omnia-wasi-blobstore = { path = "crates/wasi-blobstore", version = "0.27.0" }
+omnia-wasi-config = { path = "crates/wasi-config", version = "0.27.0" }
+omnia-wasi-http = { path = "crates/wasi-http", version = "0.27.0" }
+omnia-wasi-identity = { path = "crates/wasi-identity", version = "0.27.0" }
+omnia-wasi-keyvalue = { path = "crates/wasi-keyvalue", version = "0.27.0" }
+omnia-wasi-messaging = { path = "crates/wasi-messaging", version = "0.27.0" }
+omnia-wasi-otel = { path = "crates/wasi-otel", version = "0.27.0" }
+omnia-wasi-otel-attr = { path = "crates/wasi-otel-attr", version = "0.27.0" }
+omnia-wasi-sql = { path = "crates/wasi-sql", version = "0.27.0" }
+omnia-wasi-vault = { path = "crates/wasi-vault", version = "0.27.0" }
+omnia-wasi-websocket = { path = "crates/wasi-websocket", version = "0.27.0" }
 
 [profile.release]
 lto = true
@@ -129,9 +125,9 @@ strip = true
 # [package.metadata.cargo-machete]
 # ignored = ["openssl"]
 
-[patch.crates-io]
-wasmtime = { git = "https://github.com/bytecodealliance/wasmtime", branch = "release-42.0.0" }
-wasmtime-wasi = { git = "https://github.com/bytecodealliance/wasmtime", branch = "release-42.0.0" }
-wasmtime-wasi-config = { git = "https://github.com/bytecodealliance/wasmtime", branch = "release-42.0.0" }
-wasmtime-wasi-http = { git = "https://github.com/bytecodealliance/wasmtime", branch = "release-42.0.0" }
-wasmtime-wasi-io = { git = "https://github.com/bytecodealliance/wasmtime", branch = "release-42.0.0" }
+# [patch.crates-io]
+# wasmtime = { git = "https://github.com/bytecodealliance/wasmtime", branch = "release-42.0.0" }
+# wasmtime-wasi = { git = "https://github.com/bytecodealliance/wasmtime", branch = "release-42.0.0" }
+# wasmtime-wasi-config = { git = "https://github.com/bytecodealliance/wasmtime", branch = "release-42.0.0" }
+# wasmtime-wasi-http = { git = "https://github.com/bytecodealliance/wasmtime", branch = "release-42.0.0" }
+# wasmtime-wasi-io = { git = "https://github.com/bytecodealliance/wasmtime", branch = "release-42.0.0" }
